@@ -8,6 +8,7 @@ import datetime  # модуль для работы с временем
 import vk_api
 from vk_api.longpoll import VkLongPoll, VkEventType
 import settings
+import random
 
 
 def get_tags_a(n, s):
@@ -67,8 +68,9 @@ def get_quest(tags_a, count, working):
 
     """точка отсчета"""
     for i in range(count):
+        sort_random = ["hardr", "hard", "fav", "ids", "idsr"]
         work = requests.get(
-            f"https://math-ege.sdamgia.ru{tags_a[0]}")  # делаем запрос на выбранную подзадачу пользователя
+            f"https://math-ege.sdamgia.ru{tags_a[0]}&sort={sort_random[random.randint(0, len(sort_random))]}")  # делаем запрос на выбранную подзадачу пользователя
         soup_quest = BeautifulSoup(work.content, "html.parser")
         page_take_quest = soup_quest.findAll("div", class_="answer")  # получения всех ответов на странице
         answer_MAIN = []  # ответы которые конвертированы в int
