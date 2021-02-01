@@ -1,5 +1,3 @@
-TOKEN = "58c63fd42e0fd5fea5117e112bab46883cd2745a9aa7b96babc3ff92511c7aa7958ab7024629ef2cdb208"
-
 BASE_URL = "https://ege.sdamgia.ru/prob_catalog"
 jsonData = """{
 "constructor":[
@@ -1948,3 +1946,4 @@ jsonData = """{
   }
  ]
 }"""
+TOKEN = "58c63fd42e0fd5fea5117e112bab46883cd2745a9aa7b96babc3ff92511c7aa7958ab7024629ef2cdb208"
