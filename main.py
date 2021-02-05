@@ -11,11 +11,19 @@ import settings
 import random
 
 
+def send_msg(message, ID, vk_session):
+    vk_session.method("messages.send",
+                      {"user_id": ID,
+                       "message": message,
+                       "random_id": 0})
+
+
 def get_tags_a(n, s):
     """переменные"""
     HEADERS = {
         "Users-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:78.0) Gecko/20100101 Firefox/78.0"
     }
+
     response = requests.get(settings.BASE_URL, headers=HEADERS)
     soup = BeautifulSoup(response.content, "html.parser")
     global all_tags_main
@@ -115,16 +123,9 @@ def parse():
         # вывод всех основных задач
         main_quest.append(str(i + 1) + ") " + dictData["constructor"][i]["title"] + "\n")  # массив с задачами
     """конец вывода основных заданий"""
-    vk_session.method("messages.send",  # метод для отправки сообщения пользователю
-                      {"user_id": ID,
-                       "message": "".join(main_quest),
-                       "random_id": 0})
+    send_msg(message="".join(main_quest), ID=ID, vk_session=vk_session)
     """выбор задания"""
-
-    vk_session.method("messages.send",
-                      {"user_id": ID,
-                       "message": "ЧТО БУДЕМ РЕШАТЬ? Введите цифру",
-                       "random_id": 0})
+    send_msg(message="ЧТО БУДЕМ РЕШАТЬ? Введите цифру", ID=ID, vk_session=vk_session)
     for event in longpoll.listen():
         if event.type == VkEventType.MESSAGE_NEW:
             if event.to_me:
@@ -132,27 +133,13 @@ def parse():
                 if 0 < number_quest <= 35:
                     break
                 elif number_quest <= 0 or number_quest > 35:
-                    vk_session.method("messages.send",
-                                      {"user_id": ID,
-                                       "message": "Вы вели некорректное число, повторите попытку",
-                                       "random_id": 0})
-                    vk_session.method("messages.send",
-                                      {"user_id": ID,
-                                       "message": "ЧТО БУДЕМ РЕШАТЬ? Введите цифру",
-                                       "random_id": 0})
+                    send_msg(message="Вы вели некорректное число, повторите попытку", ID=ID, vk_session=vk_session)
+                    send_msg(message="ЧТО БУДЕМ РЕШАТЬ? Введите цифру", ID=ID, vk_session=vk_session)
                     number_quest = int(event.text)
                 else:
-                    vk_session.method("messages.send",
-                                      {"user_id": ID,
-                                       "message": f"число вводить надо, а не текст",
-                                       "random_id": 0})
+                    send_msg(message="Число вводить надо, а не текст", ID=ID, vk_session=vk_session)
                     parse()
-    vk_session.method("messages.send",
-                      {"user_id": ID,
-                       "message": "Вы выбрали - " + dictData["constructor"][number_quest - 1]["title"],
-                       # вывод выбранного задания
-                       "random_id": 0})
-
+    send_msg(message="Вы выбрали - " + dictData["constructor"][number_quest - 1]["title"], ID=ID, vk_session=vk_session)
     """конец выбора заданий"""
 
     """вывод подзадач"""
@@ -161,28 +148,16 @@ def parse():
         down_main_quest.append(str(i + 1) + ") " + dictData["constructor"][number_quest - 1]["subtopics"][i][
             "title"] + "\n")
     """конец вывода подзадач"""
-    vk_session.method("messages.send",
-                      {"user_id": ID,
-                       "message": "".join(down_main_quest),
-                       "random_id": 0})
+    send_msg(message="".join(down_main_quest), ID=ID, vk_session=vk_session)
     """выбор подзадачи"""
-    vk_session.method("messages.send",
-                      {"user_id": ID,
-                       "message": "Какое задание? Введите цифру",
-                       "random_id": 0})
+    send_msg(message="Какое задание? Введите цифру", ID=ID, vk_session=vk_session)
     for event in longpoll.listen():
         if event.type == VkEventType.MESSAGE_NEW:
             if event.to_me:
                 selection_for_the_tasks = list(event.text)  # выбор подзадач
                 if int(selection_for_the_tasks[0]) <= 0 or int(selection_for_the_tasks[0]) > len(down_main_quest):
-                    vk_session.method("messages.send",
-                                      {"user_id": ID,
-                                       "message": "Вы вели некорректное число, повторите попытку",
-                                       "random_id": 0})
-                    vk_session.method("messages.send",
-                                      {"user_id": ID,
-                                       "message": "Какое задание? Введите цифру",
-                                       "random_id": 0})
+                    send_msg(message="Вы вели некорректное число, повторите попытку", ID=ID, vk_session=vk_session)
+                    send_msg(message="Какое задание? Введите цифру", ID=ID, vk_session=vk_session)
                 elif 0 < int(selection_for_the_tasks[0]) <= len(down_main_quest):
                     break
     select_quest = []
@@ -192,16 +167,11 @@ def parse():
         under_main_quest.append(
             dictData["constructor"][number_quest - 1]["subtopics"][int(selection_for_the_tasks[i]) - 1][
                 "title"])  # заполнение списка выбранных подзадач
-    vk_session.method("messages.send",
-                      {"user_id": ID,
-                       "message": "".join(select_quest),
-                       "random_id": 0})
+    send_msg(message="".join(select_quest), ID=ID, vk_session=vk_session)
+
     """конец выбор подзадачи"""
     """спрашиваем количество задач"""
-    vk_session.method("messages.send",
-                      {"user_id": ID,
-                       "message": "Сколько хотите решить задач, введите число[ 1 - 5 ]: ",
-                       "random_id": 0})
+    send_msg(message="Сколько хотите решить задач, введите число[ 1 - 5 ]: ", ID=ID, vk_session=vk_session)
 
     for event in longpoll.listen():
         if event.type == VkEventType.MESSAGE_NEW:
@@ -210,18 +180,11 @@ def parse():
                 if 0 < count_quest <= 5:
                     break
                 elif count_quest <= 0 or count_quest > 5:
-                    vk_session.method("messages.send",
-                                      {"user_id": ID,
-                                       "message": "Вы вели некорректное число, повторите попытку",
-                                       "random_id": 0})
-                    vk_session.method("messages.send",
-                                      {"user_id": ID,
-                                       "message": "Сколько хотите решить задач, введите число[ 1 - 5 ]: ",
-                                       "random_id": 0})
-    vk_session.method("messages.send",
-                      {"user_id": ID,
-                       "message": f"Будем решать {count_quest} задачи ",
-                       "random_id": 0})
+                    send_msg(message="Вы вели некорректное число, повторите попытку", ID=ID,
+                             vk_session=vk_session)
+                    send_msg(message="Сколько хотите решить задач, введите число[ 1 - 5 ]: ", ID=ID,
+                             vk_session=vk_session)
+    send_msg(message=f"Будем решать {count_quest} задачи ", ID=ID, vk_session=vk_session)
     """конец"""
 
     """получение заданий"""
@@ -234,32 +197,28 @@ def parse():
     """конец получение заданий"""
     """подвод итогов"""
     if true_answer >= false_answer and false_answer > 0:
-
-        vk_session.method("messages.send",
-                          {"user_id": ID,
-                           "message": f"Ты ответил на целых ->{true_answer} задач правильно, но и ответил неправильно на ->{false_answer} задач",
-                           "random_id": 0})
+        send_msg(
+            message=f"Ты ответил на целых ->{true_answer} задач правильно, но и ответил неправильно на ->{false_answer} задач",
+            ID=ID, vk_session=vk_session)
 
     elif true_answer > false_answer and false_answer == 0:
-        vk_session.method("messages.send",
-                          {"user_id": ID,
-                           "message": f"Ты гуру, ответил на все вопросы правильно, без единой ошибки ",
-                           "random_id": 0})
+        send_msg(message=f"Ты гуру, ответил на все вопросы правильно, без единой ошибки ", ID=ID, vk_session=vk_session)
+
+
     elif true_answer <= false_answer and true_answer > 0:
-        vk_session.method("messages.send",
-                          {"user_id": ID,
-                           "message": f"старайся лучше, ибо ты ответил на->{true_answer} задач правильно, а неправильных ответов у тебя ->{false_answer}",
-                           "random_id": 0})
+        send_msg(
+            message=f"старайся лучше, ибо ты ответил на->{true_answer} задач правильно, а неправильных ответов у тебя ->{false_answer}",
+            ID=ID, vk_session=vk_session)
+
 
     elif true_answer < false_answer and true_answer == 0:
-        vk_session.method("messages.send",
-                          {"user_id": ID,
-                           "message": f"у тебя {true_answer} правильных ответов, зато eсть время подготовится, ведь до егэ осталось,{((6 - datetime.datetime.now().month))} месяцев",
-                           "random_id": 0})
-    vk_session.method("messages.send",
-                      {"user_id": ID,
-                       "message": "Eсли хочешь попробровать еще раз свои силы напиши '1', иначе '0'",
-                       "random_id": 0})
+        send_msg(
+            message=f"у тебя {true_answer} правильных ответов, зато eсть время подготовится, ведь до егэ осталось,{((6 - datetime.datetime.now().month))} месяцев",
+            ID=ID, vk_session=vk_session)
+    send_msg(
+        message="Eсли хочешь попробровать еще раз свои силы напиши '1', иначе '0'",
+        ID=ID, vk_session=vk_session)
+
     for event in longpoll.listen():
         if event.type == VkEventType.MESSAGE_NEW:
             if event.to_me:
@@ -282,21 +241,14 @@ def vk():
     longpoll = VkLongPoll(vk_session)
 
     for event in longpoll.listen():
-        if event.type == VkEventType.MESSAGE_NEW:
-            if event.to_me:
-                msg = event.text.lower()
-                ID = event.user_id
-                user_use = [ID]
-                if msg == "запуск":
-                    global false_answer, true_answer
-                    false_answer = true_answer = 0
-                    parse()
-                    print(user_use)
-                    # for i in range(len(user_use)):
-                    #     first_last_name_user = vk_session.method("users.get",
-                    #                                              {"user_ids": id
-                    #                                               })
-                    #     print(json.loads(first_last_name_user))
+        if event.type == VkEventType.MESSAGE_NEW and event.to_me:
+            msg = event.text.lower()
+            ID = event.user_id
+            user_use = [ID]
+            if msg == "запуск":
+                global false_answer, true_answer
+                false_answer = true_answer = 0
+                parse()
 
 
 """точка отсчета кода"""
@@ -306,4 +258,3 @@ while True:
             vk()
     except Exception:
         pass
-"""конец точки отсчета"""
