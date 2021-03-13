@@ -41,23 +41,25 @@ def get_tags_a(n, s):
     for i in range(len(s)):
         all_tags_main.append(all_tags_a[int(s[i]) - 1])
     return all_tags_main
-    """конец получения ссылок подзадач"""
+
+
+"""конец получения ссылок подзадач"""
 
 
 def get_quest(tags_a, count, working):
-    global true_answer, false_answer
+    global true_answer, false_answer, answer_quest
 
     def answer(soup, working):
 
         """номера всех задач на странице"""
-        if working == True:
+        if working:
             global page_answer
             page_answer = []  # номера задач для получения ответа
             for i in soup.find_all("a", href=True):
                 if i["href"][:9] == "/problem?":
                     page_answer.append(i["href"])
-                    working = False
-        return page_answer
+
+            return page_answer
 
     """конец и больше не используется"""
 
@@ -72,7 +74,8 @@ def get_quest(tags_a, count, working):
                 all_quest.append(j.find("p").get_text(strip=True))
                 count_for += 1
         return all_quest
-        """конец заполнение задач"""
+
+    """конец заполнение задач"""
 
     """точка отсчета"""
     for i in range(count):
@@ -85,16 +88,10 @@ def get_quest(tags_a, count, working):
         for answer_i in page_take_quest:  # парсим page_take_quest
             answer_MAIN.append(answer_i.find("span", style="letter-spacing: 2px;").get_text(strip=True)[7:])
         quest_write(soup=soup_quest, count=count)  # вывод всех задач на странице
-        vk_session.method("messages.send",
-                          {"user_id": ID,
-                           "message": all_quest[i],
-                           "random_id": 0})
+        send_msg(message=all_quest[i], ID=ID, vk_session=vk_session)
 
         answer(soup_quest, working)  # ответы на выбранной странице
-        vk_session.method("messages.send",
-                          {"user_id": ID,
-                           "message": "Ответ: ",
-                           "random_id": 0})
+        send_msg(message="Ответ: ", ID=ID, vk_session=vk_session)
         for event in longpoll.listen():
             if event.type == VkEventType.MESSAGE_NEW:
                 if event.to_me:
@@ -107,7 +104,7 @@ def get_quest(tags_a, count, working):
             false_answer += 1
         else:
             false_answer += 1
-    return true_answer, false_answer
+        return true_answer, false_answer
 
 
 def parse():
@@ -116,7 +113,7 @@ def parse():
     main_quest = []  # список основных задач
     under_main_quest = []  # список основных под задач
     dictData = json.loads(settings.jsonData)  # превращения из строки в json
-    global true_answer, false_answer
+    global true_answer, false_answer, selection_for_the_tasks, count_quest, repeat, number_quest
 
     """вывод основых заданий"""
     for i in range(len(dictData["constructor"])):
@@ -196,12 +193,12 @@ def parse():
 
     """конец получение заданий"""
     """подвод итогов"""
-    if true_answer >= false_answer and false_answer > 0:
+    if true_answer >= false_answer > 0:
         send_msg(
             message=f"Ты ответил на целых ->{true_answer} задач правильно, но и ответил неправильно на ->{false_answer} задач",
             ID=ID, vk_session=vk_session)
 
-    elif true_answer > false_answer and false_answer == 0:
+    elif true_answer > false_answer == 0:
         send_msg(message=f"Ты гуру, ответил на все вопросы правильно, без единой ошибки ", ID=ID, vk_session=vk_session)
 
 
@@ -222,7 +219,7 @@ def parse():
     for event in longpoll.listen():
         if event.type == VkEventType.MESSAGE_NEW:
             if event.to_me:
-                repeat = (event.text)
+                repeat = event.text
                 break
     if repeat == "1":  # запуск заново программы
         parse()
