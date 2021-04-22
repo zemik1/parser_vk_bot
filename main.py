@@ -47,7 +47,7 @@ def get_tags_a(n, s):
 
 
 def get_quest(tags_a, count, working):
-    global true_answer, false_answer, answer_quest
+    global true_answer, false_answer, answer_quest, all_quest
 
     def answer(soup, working):
 
@@ -68,6 +68,7 @@ def get_quest(tags_a, count, working):
         global all_quest
         all_quest = []
         quest = soup.find_all("div", align="justify", class_="pbody")
+        del quest[1]
         count_for = 0
         for j in quest:
             if count != count_for and len(j.find("p").get_text(strip=True)) != 0:
@@ -88,9 +89,10 @@ def get_quest(tags_a, count, working):
         for answer_i in page_take_quest:  # парсим page_take_quest
             answer_MAIN.append(answer_i.find("span", style="letter-spacing: 2px;").get_text(strip=True)[7:])
         quest_write(soup=soup_quest, count=count)  # вывод всех задач на странице
-        send_msg(message=all_quest[i], ID=ID, vk_session=vk_session)
 
+        send_msg(message=all_quest[i], ID=ID, vk_session=vk_session)
         answer(soup_quest, working)  # ответы на выбранной странице
+
         send_msg(message="Ответ: ", ID=ID, vk_session=vk_session)
         for event in longpoll.listen():
             if event.type == VkEventType.MESSAGE_NEW:
@@ -104,7 +106,7 @@ def get_quest(tags_a, count, working):
             false_answer += 1
         else:
             false_answer += 1
-        return true_answer, false_answer
+    return true_answer, false_answer
 
 
 def parse():
@@ -245,6 +247,7 @@ def vk():
             if msg == "запуск":
                 global false_answer, true_answer
                 false_answer = true_answer = 0
+
                 parse()
 
 
@@ -255,3 +258,4 @@ while True:
             vk()
     except Exception:
         pass
+# © 2021 GitHub, Inc.
